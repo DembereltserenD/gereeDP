@@ -125,13 +125,20 @@ export async function updateServiceContract(id: string, input: ServiceContractUp
 export async function deleteServiceContract(id: string) {
   const supabase = await createClient()
 
-  const { error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error, count } = await supabase
     .from('service_contracts')
-    .delete()
+    .delete({ count: 'exact' })
     .eq('id', id)
 
   if (error) {
     throw new Error(error.message)
+  }
+
+  if (count === 0) {
+    throw new Error('Устгах эрх байхгүй эсвэл бүртгэл олдсонгүй')
   }
 
   revalidatePath('/service-contracts')

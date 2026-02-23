@@ -40,10 +40,8 @@ interface DataTableProps {
 function formatCurrency(value: number | null) {
   if (!value) return '-'
   return new Intl.NumberFormat('mn-MN', {
-    style: 'currency',
-    currency: 'MNT',
     maximumFractionDigits: 0,
-  }).format(value)
+  }).format(value) + '₮'
 }
 
 function getStatusColor(status: string) {

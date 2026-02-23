@@ -158,16 +158,24 @@ export async function updateSalesFunnelStage(id: string, stage: Stage) {
 export async function deleteSalesFunnel(id: string) {
   const supabase = await createClient()
 
-  const { error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { error, count } = await supabase
     .from('sales_funnel')
-    .delete()
+    .delete({ count: 'exact' })
     .eq('id', id)
 
   if (error) {
     throw new Error(error.message)
   }
 
+  if (count === 0) {
+    throw new Error('Устгах эрх байхгүй эсвэл бүртгэл олдсонгүй')
+  }
+
   revalidatePath('/sales-funnel')
+  revalidatePath('/sales-funnel/kanban')
   revalidatePath('/dashboard')
 }
 

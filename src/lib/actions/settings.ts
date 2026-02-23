@@ -34,10 +34,9 @@ export async function getSalesTargets(): Promise<SalesTarget[]> {
 
   const settings = data as Settings[]
 
-  return settings.map(s => ({
-    team: s.team_name!,
-    target: s.target_2026!,
-  }))
+  const teamMap: Record<string, number> = {}
+  settings.forEach(s => { teamMap[s.team_name!] = s.target_2026! })
+  return Object.entries(teamMap).map(([team, target]) => ({ team, target }))
 }
 
 export async function getStageProbabilities(): Promise<StageProbability[]> {
@@ -55,10 +54,9 @@ export async function getStageProbabilities(): Promise<StageProbability[]> {
 
   const settings = data as Settings[]
 
-  return settings.map(s => ({
-    stage: s.stage_name!,
-    probability: s.probability ?? 0,
-  }))
+  const stageMap: Record<string, number> = {}
+  settings.forEach(s => { stageMap[s.stage_name!] = s.probability ?? 0 })
+  return Object.entries(stageMap).map(([stage, probability]) => ({ stage, probability }))
 }
 
 export async function getServiceContractTargets(): Promise<ServiceContractTarget[]> {
@@ -77,10 +75,9 @@ export async function getServiceContractTargets(): Promise<ServiceContractTarget
 
   const settings = data as Settings[]
 
-  return settings.map(s => ({
-    team: s.team_name!,
-    target: s.target_2026!,
-  }))
+  const teamMap: Record<string, number> = {}
+  settings.forEach(s => { teamMap[s.team_name!] = s.target_2026! })
+  return Object.entries(teamMap).map(([team, target]) => ({ team, target }))
 }
 
 export async function getAllSettings() {

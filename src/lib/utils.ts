@@ -53,7 +53,7 @@ export function formatCurrencyMn(value: number | null | undefined): string {
   if (value >= 1000) {
     return `${(value / 1000).toFixed(1)} мянга₮`
   }
-  return `${value.toLocaleString()}₮`
+  return `${value.toLocaleString('mn-MN')}₮`
 }
 
 // Get relative time in Mongolian

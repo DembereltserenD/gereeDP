@@ -7,10 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('mn-MN', {
-    style: 'currency',
-    currency: 'MNT',
     maximumFractionDigits: 0,
-  }).format(value)
+  }).format(value) + '₮'
 }
 
 export default async function StockPage() {

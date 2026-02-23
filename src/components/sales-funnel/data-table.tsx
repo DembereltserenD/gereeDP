@@ -40,10 +40,8 @@ interface DataTableProps {
 function formatCurrency(value: number | null) {
   if (!value) return '-'
   return new Intl.NumberFormat('mn-MN', {
-    style: 'currency',
-    currency: 'MNT',
     maximumFractionDigits: 0,
-  }).format(value)
+  }).format(value) + '₮'
 }
 
 function getStageColor(stage: string) {
@@ -69,18 +67,21 @@ export function SalesFunnelDataTable({ data }: DataTableProps) {
   const router = useRouter()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const handleDelete = async () => {
     if (!deleteId) return
     setDeleting(true)
+    setDeleteError(null)
     try {
       await deleteSalesFunnel(deleteId)
+      setDeleteId(null)
       router.refresh()
     } catch (error) {
       console.error('Delete error:', error)
+      setDeleteError(error instanceof Error ? error.message : 'Устгахад алдаа гарлаа')
     } finally {
       setDeleting(false)
-      setDeleteId(null)
     }
   }
 
@@ -168,7 +169,7 @@ export function SalesFunnelDataTable({ data }: DataTableProps) {
         </Table>
       </div>
 
-      <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      <Dialog open={!!deleteId} onOpenChange={(open) => { if (!open) { setDeleteId(null); setDeleteError(null) } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Устгах уу?</DialogTitle>
@@ -176,8 +177,11 @@ export function SalesFunnelDataTable({ data }: DataTableProps) {
               Энэ үйлдлийг буцаах боломжгүй. Та итгэлтэй байна уу?
             </DialogDescription>
           </DialogHeader>
+          {deleteError && (
+            <p className="text-sm text-red-600 px-1">{deleteError}</p>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteId(null)}>
+            <Button variant="outline" onClick={() => { setDeleteId(null); setDeleteError(null) }}>
               Болих
             </Button>
             <Button

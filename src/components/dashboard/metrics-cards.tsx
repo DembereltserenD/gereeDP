@@ -18,7 +18,7 @@ function formatCurrency(value: number) {
   if (value >= 1000) {
     return `${(value / 1000).toFixed(1)} мянга`
   }
-  return value.toLocaleString()
+  return value.toLocaleString('mn-MN')
 }
 
 export function MetricsCards({ metrics }: MetricsCardsProps) {

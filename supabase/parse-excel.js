@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Read the Excel file
-const excelPath = path.join(__dirname, '..', '..', 'sales-funnel-SD.xlsx');
+const excelPath = path.join(__dirname, '..', 'sales-funnel-SD.xlsx');
 const workbook = XLSX.readFile(excelPath);
 
 // Get sheet names

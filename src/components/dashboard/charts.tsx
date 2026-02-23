@@ -37,7 +37,7 @@ function formatCurrency(value: number) {
   if (value >= 1000) {
     return `${(value / 1000).toFixed(0)} мянга`
   }
-  return value.toLocaleString()
+  return value.toLocaleString('mn-MN')
 }
 
 const stageNamesMn: Record<string, string> = {

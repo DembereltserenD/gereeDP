@@ -35,6 +35,14 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache when offline
 self.addEventListener('fetch', (event) => {
+  // Let the browser handle navigation requests so middleware redirects work correctly
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/offline.html'))
+    )
+    return
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -42,7 +50,6 @@ self.addEventListener('fetch', (event) => {
         return response || fetch(event.request)
       })
       .catch(() => {
-        // Return offline page for navigation requests
         if (event.request.destination === 'document') {
           return caches.match('/offline.html')
         }

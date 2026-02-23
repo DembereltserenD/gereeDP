@@ -21,6 +21,17 @@ export interface TeamTarget {
   percentage: number
 }
 
+const emptyMetrics: DashboardMetrics = {
+  totalOpportunities: 0,
+  totalValue: 0,
+  closedValue: 0,
+  wonValue: 0,
+  hotValue: 0,
+  lostValue: 0,
+  byStage: [],
+  byTeam: [],
+}
+
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const supabase = await createClient()
 
@@ -29,7 +40,8 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     .select('*')
 
   if (error) {
-    throw new Error(error.message)
+    console.error('getDashboardMetrics error:', error.message)
+    return emptyMetrics
   }
 
   const salesData = data as SalesFunnel[]
@@ -90,31 +102,40 @@ export async function getTeamTargets(): Promise<TeamTarget[]> {
   const supabase = await createClient()
 
   // Get targets from settings
-  const { data: settingsData } = await supabase
+  const { data: settingsData, error: settingsError } = await supabase
     .from('settings')
     .select('*')
     .eq('setting_type', 'sales_funnel')
     .not('team_name', 'is', null)
 
+  if (settingsError) {
+    console.error('getTeamTargets settings error:', settingsError.message)
+    return []
+  }
+
   const settings = (settingsData || []) as Settings[]
 
   // Get actual sales by team (Closed + Won)
-  const { data: salesResult } = await supabase
+  const { data: salesResult, error: salesError } = await supabase
     .from('sales_funnel')
     .select('team_member, price, stage')
     .in('stage', ['Closed', 'Won'])
 
+  if (salesError) {
+    console.error('getTeamTargets sales error:', salesError.message)
+  }
+
   const salesData = (salesResult || []) as Pick<SalesFunnel, 'team_member' | 'price' | 'stage'>[]
 
   const targetMap: Record<string, number> = {}
-  const teams: string[] = []
 
   settings.forEach(s => {
     if (s.team_name && s.target_2026) {
       targetMap[s.team_name] = s.target_2026
-      teams.push(s.team_name)
     }
   })
+
+  const teams = Object.keys(targetMap)
 
   const actualMap: Record<string, number> = {}
   salesData.forEach(item => {
@@ -148,7 +169,13 @@ export async function getFunnelConversions() {
     .select('stage, price')
 
   if (error) {
-    throw new Error(error.message)
+    console.error('getFunnelConversions error:', error.message)
+    return ['Cold', 'Warm', 'Hot', 'Won', 'Closed', 'Lost'].map(stage => ({
+      stage,
+      count: 0,
+      value: 0,
+      percentage: 0,
+    }))
   }
 
   const salesData = data as Pick<SalesFunnel, 'stage' | 'price'>[]
@@ -180,7 +207,8 @@ export async function getMonthlyTrends() {
     .order('created_date', { ascending: true })
 
   if (error) {
-    throw new Error(error.message)
+    console.error('getMonthlyTrends error:', error.message)
+    return []
   }
 
   const salesData = data as Pick<SalesFunnel, 'created_date' | 'price' | 'stage'>[]
@@ -218,7 +246,8 @@ export async function getTopClients(limit = 10) {
     .select('client_name, price')
 
   if (error) {
-    throw new Error(error.message)
+    console.error('getTopClients error:', error.message)
+    return []
   }
 
   const salesData = data as Pick<SalesFunnel, 'client_name' | 'price'>[]
@@ -246,7 +275,18 @@ export async function getServiceContractMetrics() {
     .order('created_date', { ascending: false })
 
   if (error) {
-    throw new Error(error.message)
+    console.error('getServiceContractMetrics error:', error.message)
+    return {
+      total: 0,
+      closed: 0,
+      yearly: 0,
+      count: 0,
+      closedCount: 0,
+      latestContracts: [] as { id: string; clientName: string; stage: string; price: number | null; createdDate: string | null; closeDate: string | null }[],
+      earliestDate: null as string | null,
+      latestDate: null as string | null,
+      byStage: { Closed: 0, Hot: 0, Warm: 0 },
+    }
   }
 
   const contracts = data as ServiceContract[]
